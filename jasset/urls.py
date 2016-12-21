@@ -1,8 +1,8 @@
 # coding:utf-8
-from django.conf.urls import patterns, include, url
+from django.conf.urls import  url
 from jasset.views import *
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^asset/add/$', asset_add, name='asset_add'),
     url(r"^asset/add_batch/$", asset_add_batch, name='asset_add_batch'),
     url(r'^asset/list/$', asset_list, name='asset_list'),
@@ -21,4 +21,4 @@ urlpatterns = patterns('',
     url(r'^idc/list/$', idc_list, name='idc_list'),
     url(r'^idc/edit/$', idc_edit, name='idc_edit'),
     url(r'^idc/del/$', idc_del, name='idc_del'),
-)
+]

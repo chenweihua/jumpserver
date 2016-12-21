@@ -7,9 +7,13 @@ import os.path
 from ansible.inventory.group import Group
 from ansible.inventory.host import Host
 from ansible.inventory import Inventory
-from ansible.runner import Runner
-from ansible.playbook import PlayBook
-from ansible import callbacks
+from ansible.playbook.play import Play
+from ansible.executor.task_queue_manager import TaskQueueManager
+from ansible.executor.playbook_executor import PlaybookExecutor
+from ansible.plugins.callback import  CallbackBase
+# from ansible.runner import Runner
+# from ansible.playbook import PlayBook
+# from ansible import callbacks
 from ansible import utils
 import ansible.constants as C
 from passlib.hash import sha512_crypt
@@ -131,7 +135,7 @@ class MyRunner(MyInventory):
         module_name: ansible module_name
         module_args: ansible module args
         """
-        hoc = Runner(module_name=module_name,
+        hoc = TaskQueueManager(module_name=module_name,
                      module_args=module_args,
                      timeout=timeout,
                      inventory=self.inventory,
@@ -193,7 +197,7 @@ class Command(MyInventory):
         if module_name not in ["raw", "command", "shell"]:
             raise CommandValueError("module_name",
                                     "module_name must be of the 'raw, command, shell'")
-        hoc = Runner(module_name=module_name,
+        hoc = TaskQueueManager(module_name=module_name,
                      module_args=command,
                      timeout=timeout,
                      inventory=self.inventory,
@@ -421,7 +425,7 @@ class MyTask(MyRunner):
         return self.results
 
 
-class CustomAggregateStats(callbacks.AggregateStats):
+class CustomAggregateStats():
     """                                                                             
     Holds stats about per-host activity during playbook runs.                       
     """
@@ -463,12 +467,12 @@ class MyPlaybook(MyInventory):
         run ansible playbook,
         only surport relational path.
         """
-        stats = callbacks.AggregateStats()
-        playbook_cb = callbacks.PlaybookCallbacks(verbose=utils.VERBOSITY)
-        runner_cb = callbacks.PlaybookRunnerCallbacks(stats, verbose=utils.VERBOSITY)
+        stats = CallbackBase.AggregateStats()
+        playbook_cb = CallbackBase.PlaybookCallbacks(verbose=utils.VERBOSITY)
+        runner_cb = CallbackBase.PlaybookRunnerCallbacks(stats, verbose=utils.VERBOSITY)
         playbook_path = os.path.join(ANSIBLE_DIR, playbook_relational_path)
 
-        pb = PlayBook(
+        pb = PlaybookExecutor(
             playbook=playbook_path,
             stats=stats,
             callbacks=playbook_cb,
