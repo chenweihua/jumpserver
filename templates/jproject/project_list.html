@@ -8,7 +8,7 @@
         <div class="col-sm-12">
             <div class="ibox float-e-margins">
                 <div class="ibox-title">
-                    <h5> 查看用户 </h5>
+                    <h5> 查看项目 </h5>
                     <div class="ibox-tools">
                         <a class="collapise-link">
                             <i class="fa fa-chevron-up"></i>
@@ -24,7 +24,7 @@
 
                 <div class="ibox-content">
                     <div class="">
-                        <a href="{% url 'user_add' %}" class="btn btn-sm btn-primary "> 添加用户 </a>
+                        <a href="{% url 'project_add' %}" class="btn btn-sm btn-primary "> 添加用户 </a>
                         <a id="del_btn" class="btn btn-sm btn-danger "> 删除所选 </a>
                         <form id="search_form" method="get" action="" class="pull-right mail-search">
                             <div class="input-group">
@@ -44,39 +44,42 @@
                                 <th class="text-center">
                                     <input type="checkbox" id="check_all" onclick="checkAll('check_all', 'checked')">
                                 </th>
-                                <th class="text-center">用户名</th>
-                                <th class="text-center">姓名</th>
-                                <th class="text-center">小组</th>
-                                <th class="text-center">权限</th>
-                                <th class="text-center">主机数量</th>
-                                <th class="text-center">激活</th>
+                                <th class="text-center">项目名称</th>
+                                <th class="text-center">项目代码</th>
+                                <th class="text-center">项目SCM</th>
+                                <th class="text-center">项目SCM类型</th>
+                                <th class="text-center">项目语言</th>
+                                <th class="text-center">所属项目组</th>
+                                <th class="text-center">负责人</th>
+                                <th class="text-center">负责人电话</th>
+                                <th class="text-center">工作目录</th>
+                                <th class="text-center">依赖项目</th>
                                 <th class="text-center">下载密钥</th>
                                 <th class="text-center">操作</th>
                             </tr>
                         </thead>
                         <tbody>
-                        {% for user in users.object_list %}
+                        {% for project in projects.object_list %}
                             <tr class="gradeX">
                                 <td class="text-center">
-                                    <input type="checkbox" name="checked" value="{{ user.id }}">
+                                    <input type="checkbox" name="checked" value="{{ project.id }}">
                                 </td>
-                                <td class="text-center"><a href="{% url 'user_detail' %}?id={{ user.id }}">{{ user.username }}</a></td>
-                                <td class="text-center"> {{ user.name }} </td>
-                                <td class="text-center" title="{% for user_group in user.group.all %} {{ user_group.name }} {% endfor %}"> {{ user.group.all | groups2str  }} </td>
-                                <td class="text-center"> {{ user.id | get_role }}</td>
-                                <th class="text-center">{{ user.id | user_perm_asset_num }}</th>
+                                <td class="text-center"><a href="{% url 'user_detail' %}?id={{ user.id }}">{{ project.username }}</a></td>
+                                <td class="text-center"> {{ project.name }} </td>
+                                <td class="text-center" title="{% for projectgroup in user.projectgroup.all %} {{ projectgroup.name }} {% endfor %}"> {{ project.projectgroup.all | groups2str  }} </td>
+                                <td class="text-center"> {{ project.id }}</td>
+                                <th class="text-center">{{ project.id | user_perm_asset_num }}</th>
                                 <td class="text-center">{{ user.is_active | bool2str }}</td>
                                 <td class="text-center">
-                                    {% if user.username|key_exist %}
+                                    {% if project.username|key_exist %}
                                         <a  href="{% url 'key_down' %}?uuid={{ user.uuid }}" >下载</a>
                                     {% else %}
                                         <a href="#" onclick="genSSH('{{ user.username }}','{% url 'key_gen' %}?uuid={{ user.uuid }}')">NoKey GenOne?</a>
                                     {% endif %}
                                 </td>
                                 <td class="text-center">
-                                    <a href="{% url 'user_edit' %}?id={{ user.id }}" class="btn btn-xs btn-info">编辑</a>
-                                    <a value="{{ user.uuid }}" class="btn btn-xs btn-warning email">Email</a>
-                                    <a value="{% url 'user_del' %}?id={{ user.id }}" class="btn btn-xs btn-danger del {% if user.username == 'admin' %} disabled {% endif %}">删除</a>
+                                    <a href="{% url 'project_edit' %}?id={{ project.id }}" class="btn btn-xs btn-info">编辑</a>
+                                    <a value="{% url 'project_del' %}?id={{ project.id }}" class="btn btn-xs btn-danger del ">删除</a>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -85,7 +88,7 @@
                     <div class="row">
                         <div class="col-sm-6">
                             <div class="dataTables_info" id="editable_info" role="status" aria-live="polite">
-                                Showing {{ users.start_index }} to {{ users.end_index }} of {{ p.count }} entries
+                                Showing {{ projects.start_index }} to {{ projects.end_index }} of {{ p.count }} entries
                             </div>
                         </div>
                         {% include 'paginator.html' %}

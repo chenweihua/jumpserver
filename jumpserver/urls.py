@@ -14,5 +14,6 @@ urlpatterns = [
     url(r'^juser/', include('juser.urls')),
     url(r'^jasset/', include('jasset.urls')),
     url(r'^jlog/', include('jlog.urls')),
-    url(r'^jperm/', include('jperm.urls'))
+    url(r'^jperm/', include('jperm.urls')),
+    url(r'^jproject/', include('jproject.urls'))
 ]

@@ -353,6 +353,7 @@ def download(request):
 @login_required(login_url='/login')
 def exec_cmd(request):
     role = request.GET.get('role')
+
     check_assets = request.GET.get('check_assets', '')
     web_terminal_uri = '/ws/exec?role=%s' % (role)
     return my_render('exec_cmd.html', locals(), request)

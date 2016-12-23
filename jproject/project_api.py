@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from models import Project,ProjectDefaultConfig,ProjectConfig,ProjectGroup,PublishProject
+from models import Project,ProjectGroup
 from jumpserver.api import get_object
 
 def group_add_project(group, project_id=None, project_name=None):
@@ -11,7 +11,7 @@ def group_add_project(group, project_id=None, project_name=None):
     if project_id:
         project = get_object(Project, id=project_id)
     else:
-        project = get_object(Project, username=project_name)
+        project = get_object(Project, project_name=project_name)
 
     if project:
         group.project_set.add(project)
@@ -36,9 +36,8 @@ def db_add_project_group(**kwargs):
     """
     group_name = kwargs.get('group_name')
     group_code = kwargs.get('group_code')
-    sort = kwargs.get('sort')
-    projectgroup = get_object(ProjectGroup, project_name=group_name)
-    proejcts = kwargs.pop('project_id')
+    projectgroup = get_object(ProjectGroup, group_name=group_name)
+    proejcts = kwargs.pop('groups_id')
 
     if not projectgroup:
         projectgroup = ProjectGroup(**kwargs).save()
@@ -55,15 +54,23 @@ def db_add_project(**kwargs):
     """
     groups_post = kwargs.pop('groups')
     role = kwargs.get('role', 'CU')
-    proejct = Project(**kwargs)
-    proejct.save()
+    projects_list=kwargs.pop(('project_list'))
+    project = Project(**kwargs)
+    project.save()
     if groups_post:
-        group_select = []
-        for group_id in groups_post:
-            group = ProjectGroup.objects.filter(id=group_id)
-            group_select.extend(group)
-        proejct.projectgroup = group_select
-    return proejct
+           group_select = []
+           for group_id in groups_post:
+               group = ProjectGroup.objects.filter(id=group_id)
+               group_select.extend(group)
+           project.projectgroup = group_select
+    if projects_list:
+          project_select =[]
+          for project_id in projects_list:
+              devproject=Project.objects.filter(id=project_id)
+              project_select.extend(devproject)
+          project.depproject =project_select
+
+    return project
 
 
 def db_update_project(**kwargs):

@@ -4,6 +4,7 @@ from django.db import models
 
 from juser.models import User
 from jasset.models import Asset,AssetGroup
+from juser.models import  Dept
 
 SCM_TYPE_CHOICES= (
     ("GIT","gitlab"),
@@ -50,19 +51,23 @@ class ProjectGroup(models.Model):
 class Project(models.Model):
     project_name =models.CharField(max_length=128,unique=True)
     project_code = models.CharField(max_length=30,unique=True)
-    scm_address =models.ForeignKey(SCMSetting)
     scm_url =models.CharField(max_length=255,unique=True)
     scm_model_type = models.CharField(max_length=10, choices=SCM_MODEL_CHOICES, default='java')
     scm_type = models.CharField(max_length=10, choices=SCM_TYPE_CHOICES, default='GIT')
-    scm_branch=models.CharField(max_length=128,default="master")
-    user = models.ForeignKey(User)
+    owner = models.ForeignKey(User)
+    dept = models.ForeignKey(Dept)
     projectgroup=models.ManyToManyField(ProjectGroup)
-    depproject=models.ManyToManyField('self')
-    proejct_username =models.CharField(max_length=32)
-    project_phone = models.CharField(max_length=20)
-    project_work=models.CharField(max_length=255)
-    project_web_work=models.CharField(max_length=255)
+    dependent=models.ManyToManyField('self')
+    manage =models.CharField(max_length=32)
+    phone = models.CharField(max_length=20)
+    work=models.CharField(max_length=255)
 
+    web_work=models.CharField(max_length=255)
+
+# class ProjectMembership(models.Model)
+#     project=models.ForeignKey(Project)
+#     group=models.ForeignKey(ProjectGroup)
+#     sort= models.IntegerField
 
 class ProjectConfig(models.Model):
     project=models.ForeignKey('Project')
@@ -86,13 +91,27 @@ class PublishConfig(models.Model):
     config_filetype=models.CharField(max_length=32)
 
 
-
 class PublishProject(models.Model):
     project=models.ForeignKey(Project)
     projectgroup=models.ForeignKey(ProjectGroup)
-    publish_type= models.CharField(max_length=10, choices=PUBLISH_TYPE_CHOICES, default='test')
+    publishenv=models.ForeignKey(PublishEnv)
     pubish_commits=models.CharField(max_length=255)
-    publish_code=models.CharField(max_length=32)
+    pubish_branch=models.CharField(max_length=255)
     asset=models.ForeignKey(Asset)
     assetgroup=models.ForeignKey(AssetGroup)
+    publish_schedule=models.ManyToManyField()
+    publish_type=models.CharField(max_length=20,choices=(("1","一次"),("2","定时")))
+    publish_status=models.CharField(max_length=20,choices=(("1","成功"),("2","失败"),("3","申请回退"),("2","回退中"),("2","回退完成")))
+
+class PublishSchedule(models.Model):
+    publish_backup =models.CharField(max_length=128)
+    publish_start=models.DateField()
+    publish_schedule=models.CharField(max_length=32)
+
+class publishHistory(models.Model):
+    publishproject=models.ForeignKey(PublishProject)
+    publish_start=models.DateField()
+    publish_end=models.DateField()
+    
+
 

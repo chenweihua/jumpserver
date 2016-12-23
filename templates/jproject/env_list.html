@@ -9,7 +9,7 @@
             <div class="ibox float-e-margins">
 
                 <div class="ibox-title">
-                    <h5> 查看项目组</h5>
+                    <h5> 查看用户组</h5>
                     <div class="ibox-tools">
                         <a class="collapse-link">
                             <i class="fa fa-chevron-up"></i>
@@ -25,7 +25,7 @@
 
                 <div class="ibox-content">
                     <div class="">
-                    <a href="{% url 'project_group_add' %}" class="btn btn-sm btn-primary "> 添加项目组 </a>
+                    <a href="{% url 'user_group_add' %}" class="btn btn-sm btn-primary "> 添加用户组 </a>
                     <a id="del_btn" class="btn btn-sm btn-danger "> 删除所选 </a>
                     <form id="search_form" method="get" action="" class="pull-right mail-search">
                         <div class="input-group">
@@ -46,25 +46,25 @@
                                     <input type="checkbox" id="select_all" name="select_all">
                                 </th>
                                 <th class="text-center">组名</th>
-                                <th class="text-center">项目数目</th>
-                                <th class="text-center">项目组代码</th>
+                                <th class="text-center">成员数目</th>
+                                <th class="text-center">备注</th>
                                 <th class="text-center">操作</th>
                             </tr>
                         </thead>
                         <tbody>
-                        {% for group in project_groups.object_list %}
+                        {% for group in user_groups.object_list %}
                             <tr class="gradeX">
                                 <td class="text-center">
                                     <input class="shiftCheckbox" type="checkbox"  name="selected" value="{{ group.id }}">
                                 </td>
-                                <td class="text-center"> {{ group.group_name }} </td>
+                                <td class="text-center"> {{ group.name }} </td>
                                 <td class="text-center">
-                                    <a href="{% url 'project_list' %}?gid={{ group.id }}"> {{ group.id | members_count }}</a>
+                                    <a href="{% url 'user_list' %}?gid={{ group.id }}"> {{ group.id | members_count }}</a>
                                 </td>
-                                <td class="text-center"> {{ group.group_code }} </td>
+                                <td class="text-center"> {{ group.comment }} </td>
                                 <td class="text-center">
-                                    <a href="{% url 'project_group_edit' %}?id={{ group.id }}" class="btn btn-xs btn-info">编辑</a>
-                                    <a value="{% url 'project_group_del' %}?id={{ group.id }}" class="btn btn-xs btn-danger del">删除</a>
+                                    <a href="{% url 'user_group_edit' %}?id={{ group.id }}" class="btn btn-xs btn-info">编辑</a>
+                                    <a value="{% url 'user_group_del' %}?id={{ group.id }}" class="btn btn-xs btn-danger del">删除</a>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -73,7 +73,7 @@
                     <div class="row">
                         <div class="col-sm-6">
                             <div class="dataTables_info" id="editable_info" role="status" aria-live="polite">
-                                Showing {{ project_groups.start_index }} to {{ project_groups.end_index }} of {{ p.count }} entries
+                                Showing {{ user_groups.start_index }} to {{ user_groups.end_index }} of {{ p.count }} entries
                             </div>
                         </div>
                         {% include 'paginator.html' %}
