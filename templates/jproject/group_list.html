@@ -57,11 +57,11 @@
                                 <td class="text-center">
                                     <input class="shiftCheckbox" type="checkbox"  name="selected" value="{{ group.id }}">
                                 </td>
-                                <td class="text-center"> {{ group.group_name }} </td>
+                                <td class="text-center"> {{ group.name }} </td>
                                 <td class="text-center">
                                     <a href="{% url 'project_list' %}?gid={{ group.id }}"> {{ group.id | members_count }}</a>
                                 </td>
-                                <td class="text-center"> {{ group.group_code }} </td>
+                                <td class="text-center"> {{ group.code }} </td>
                                 <td class="text-center">
                                     <a href="{% url 'project_group_edit' %}?id={{ group.id }}" class="btn btn-xs btn-info">编辑</a>
                                     <a value="{% url 'project_group_del' %}?id={{ group.id }}" class="btn btn-xs btn-danger del">删除</a>

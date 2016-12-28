@@ -14,5 +14,8 @@ urlpatterns = [
                        url(r"^projectenv/list/$", project_env_list, name="project_env_list"),
                        url(r"^projectenv/edit/$", project_env_edit, name="project_env_edit"),
                        url(r"^projectenv/del/$", project_env_del, name="project_env_del"),
-
+                       url(r"^projectconfig/add/$", config_add, name="config_add"),
+                       url(r"^projectconfig/list/$", config_list, name="config_list"),
+                       url(r"^projectconfig/edit/$", config_edit, name="config_edit"),
+                       url(r"^projectconfig/del/$", config_del, name="config_del"),
                        ]

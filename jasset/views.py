@@ -128,6 +128,7 @@ def asset_add(request):
     """
     header_title, path1, path2 = u'添加资产', u'资产管理', u'添加资产'
     asset_group_all = AssetGroup.objects.all()
+
     af = AssetForm()
     default_setting = get_object(Setting, name='default')
     default_port = default_setting.field2 if default_setting else ''
@@ -208,7 +209,6 @@ def asset_edit(request):
     asset = get_object(Asset, id=asset_id)
     if asset:
         password_old = asset.password
-    # asset_old = copy_model_instance(asset)
     af = AssetForm(instance=asset)
     if request.method == 'POST':
         af_post = AssetForm(request.POST, instance=asset)
@@ -575,3 +575,20 @@ def asset_upload(request):
         else:
             emg = u'批量添加失败,请检查格式.'
     return my_render('jasset/asset_add_batch.html', locals(), request)
+
+
+@require_role('admin')
+def asset_day_check(request):
+    """
+    Upload asset day check view
+    """
+    # if request.method == 'POST':
+        # excel_file = request.FILES.get('file_name', '')
+        # ret = excel_to_db(excel_file)
+
+        # if ret:
+        #     smg = u'批量添加成功'
+        # else:
+        #     emg = u'批量添加失败,请检查格式.'
+    return my_render('jasset/asset_day_check.html', locals(), request)
+

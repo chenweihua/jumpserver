@@ -109,3 +109,19 @@ class AssetAlias(models.Model):
 
     def __unicode__(self):
         return self.alias
+
+class AssetItem(models.Model):
+    ITEM_TYPE_CHOICES=(('1','方本结果手工确认'),('2','自动确认'))
+    name = models.CharField(max_length=200)
+    type = models.CharField(max_length=20,choices=ITEM_TYPE_CHOICES)
+    command=models.CharField(max_length=255)
+    refenter=models.CharField(max_length=255)
+    comment =models.TextField()
+
+class AssectCheck(models.Model):
+    RESULT_STATUS_CHOICES=(('1','正常'),('2','一般'),('3','严重'))
+    asset=models.ForeignKey(Asset)
+    assertgroup = models.ForeignKey(AssetGroup)
+    assertitem = models.ForeignKey(AssetItem)
+    result=models.CharField(max_length=255)
+    status =models.CharField(max_length=20,choices=RESULT_STATUS_CHOICES)

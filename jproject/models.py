@@ -6,6 +6,7 @@ from juser.models import User
 from jasset.models import Asset,AssetGroup
 from juser.models import  Dept
 
+
 SCM_TYPE_CHOICES= (
     ("GIT","gitlab"),
     ("SVN","svn")
@@ -33,85 +34,100 @@ class SCMSetting(models.Model):
 
 
 class SCMToken(models.Model):
-    gitsetting = models.ForeignKey(SCMSetting)
+    scmsetting = models.ForeignKey(SCMSetting)
     scm_user = models.CharField(max_length=32)
     scm_password= models.CharField(max_length=64)
     scm_user_token = models.CharField(max_length=128, null=True, unique=True, default=None, verbose_name=u'用户token')
     fullname = models.ForeignKey(User, null=False, blank=False, verbose_name=u'姓名')
 
 
-class ProjectGroup(models.Model):
-    group_code=models.CharField(max_length=32,unique=True)
-    group_name=models.CharField(max_length=32,unique=True)
+class Group(models.Model):
+    code=models.CharField(max_length=32,unique=True)
+    name=models.CharField(max_length=32,unique=True)
     def __unicode__(self):
         return self.name
 
 
 
 class Project(models.Model):
-    project_name =models.CharField(max_length=128,unique=True)
-    project_code = models.CharField(max_length=30,unique=True)
+    name =models.CharField(max_length=128,unique=True)
+    code = models.CharField(max_length=30,unique=True)
     scm_url =models.CharField(max_length=255,unique=True)
+    scm = models.ForeignKey(SCMSetting)
+    scm_project = models.CharField(max_length=255,blank=True)
     scm_model_type = models.CharField(max_length=10, choices=SCM_MODEL_CHOICES, default='java')
     scm_type = models.CharField(max_length=10, choices=SCM_TYPE_CHOICES, default='GIT')
     owner = models.ForeignKey(User)
     dept = models.ForeignKey(Dept)
-    projectgroup=models.ManyToManyField(ProjectGroup)
+    group=models.ManyToManyField(Group)
     dependent=models.ManyToManyField('self')
     manage =models.CharField(max_length=32)
     phone = models.CharField(max_length=20)
     work=models.CharField(max_length=255)
-
     web_work=models.CharField(max_length=255)
+    backup =models.CharField(max_length=128)
 
 # class ProjectMembership(models.Model)
 #     project=models.ForeignKey(Project)
 #     group=models.ForeignKey(ProjectGroup)
 #     sort= models.IntegerField
 
-class ProjectConfig(models.Model):
-    project=models.ForeignKey('Project')
-    config_file=models.CharField(max_length=255)
-    config_item=models.CharField(max_length=255)
-    config_default_value=models.CharField(max_length=255)
-    config_filetype=models.CharField(max_length=32)
+class Config(models.Model):
+    CONFIG_FLAG_CHOICES=(('1','必须'),('2','非必须'))
+    project=models.OneToOneField('Project')
+    file=models.CharField(max_length=255)
+    item=models.CharField(max_length=255)
+    defaultvalue=models.CharField(max_length=255)
+    filetype=models.CharField(max_length=32)
+    flag=models.CharField(max_length=2,choices=CONFIG_FLAG_CHOICES)
 
 
 
-class PublishEnv(models.Model):
-    config_name= models.CharField(max_length=10, choices=PUBLISH_TYPE_CHOICES, default='test')
-    config_code=models.CharField(max_length=32)
+class Env(models.Model):
+    name= models.CharField(max_length=10, choices=PUBLISH_TYPE_CHOICES, default='test')
+    precode=models.CharField(max_length=10)
+    code=models.CharField(max_length=32)
 
-class PublishConfig(models.Model):
+class Parameter(models.Model):
     project=models.ForeignKey(Project)
-    publishenv=models.ForeignKey(PublishEnv)
-    config_file=models.CharField(max_length=255)
-    config_item=models.CharField(max_length=255)
-    config_default_value=models.CharField(max_length=255)
-    config_filetype=models.CharField(max_length=32)
+    env=models.ForeignKey(Env)
+    file=models.CharField(max_length=255)
+    item=models.CharField(max_length=255)
+    confvalue=models.CharField(max_length=255)
+    filetype=models.CharField(max_length=32)
 
+STATUS_CHOICES=(("1","申请"),("2","批准"),("3","成功"),("4","失败"),("5","申请回退"),("6","回退中"),("7","回退完成"))
+MODEL_CHOICES=(("1","local"),("2","remotersync"),("3","bit"))
+SCHEDULE_TYPE_CHOICES=(("1","一次"),("2","定时"),("3","不限次"))
 
-class PublishProject(models.Model):
+class Publish(models.Model):
     project=models.ForeignKey(Project)
-    projectgroup=models.ForeignKey(ProjectGroup)
-    publishenv=models.ForeignKey(PublishEnv)
-    pubish_commits=models.CharField(max_length=255)
-    pubish_branch=models.CharField(max_length=255)
+    projectgroup=models.ForeignKey(Group)
+    env=models.ForeignKey(Env)
+    commits=models.CharField(max_length=255)
+    branch=models.CharField(max_length=255)
     asset=models.ForeignKey(Asset)
     assetgroup=models.ForeignKey(AssetGroup)
-    publish_schedule=models.ManyToManyField()
-    publish_type=models.CharField(max_length=20,choices=(("1","一次"),("2","定时")))
-    publish_status=models.CharField(max_length=20,choices=(("1","成功"),("2","失败"),("3","申请回退"),("2","回退中"),("2","回退完成")))
+    schedule=models.ForeignKey('Schedule')
+    user=models.ForeignKey(User)
+    before=models.CharField(max_length=255)
+    after=models.CharField(max_length=255)
+    model=models.CharField(max_length=20,choices=MODEL_CHOICES)
+    status=models.CharField(max_length=20,choices=STATUS_CHOICES)
 
-class PublishSchedule(models.Model):
-    publish_backup =models.CharField(max_length=128)
-    publish_start=models.DateField()
-    publish_schedule=models.CharField(max_length=32)
+
+class Schedule(models.Model):
+    type=models.CharField(max_length=20,choices=SCHEDULE_TYPE_CHOICES)
+    start=models.DateField()
+    schedule=models.CharField(max_length=32)
 
 class publishHistory(models.Model):
-    publishproject=models.ForeignKey(PublishProject)
-    publish_start=models.DateField()
-    publish_end=models.DateField()
+
+    publish=models.ForeignKey(Publish)
+    start=models.DateField()
+    end=models.DateField()
+    user=models.ForeignKey(User)
+    status=models.CharField(max_length=20,choices=STATUS_CHOICES)
     
 
 

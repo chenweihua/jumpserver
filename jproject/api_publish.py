@@ -2,7 +2,7 @@
 # coding: utf-8
 
 import os, time, socket
-from models import PublishConfig, PublishEnv ,PublishProject
+from models import Parameter, Env ,Publish
 from jumpserver.api import get_object
 
 '''
@@ -20,25 +20,25 @@ from jumpserver.api import get_object
 
 
 
-def db_add_env(**kwargs):
+def db_add_publish_env(**kwargs):
     """
     add a user in database
     数据库中添加用户
     """
 
     projects_list=kwargs.pop(('env_list'))
-    env = PublishEnv(**kwargs)
+    env = Env(**kwargs)
     env.save()
     return env
 
 
-def db_update_env(**kwargs):
+def db_update_publish_env(**kwargs):
     """
     update a user info in database
     数据库更新用户信息
     """
     env_id = kwargs.pop('env_id')
-    env = PublishEnv.objects.filter(id=env_id)
+    env = Env.objects.filter(id=env_id)
     if env:
         project_get = env[0]
         env.update(**kwargs)
@@ -47,12 +47,12 @@ def db_update_env(**kwargs):
         return None
 
 
-def db_del_env(env_code):
+def db_del_publish_env(env_code):
     """
     delete a user from database
     从数据库中删除用户
     """
-    project = get_object(PublishEnv, project_name=env_code)
+    project = get_object(Env, name=env_code)
     if project:
         project.delete()
 

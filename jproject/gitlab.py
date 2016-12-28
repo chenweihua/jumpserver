@@ -38,6 +38,25 @@ class Gitlab(object):
             pro_list.append(pro_dic)
         return pro_list
 
+    def get_projects(self):
+        url = 'http://' + self.host + '/api/v3/projects/all?private_token=' + self.rootoken
+        r = requests.get(url)
+        r.encoding = 'utf-8'
+        data = json.loads(r.text)
+        pro_list = []
+        for l in data:
+            pro_dic = {}
+            namespace = l['name_with_namespace'].split('/')
+            owner = namespace[0]
+            name = namespace[1]
+            created_at = l['created_at']
+            ssh_url = l['ssh_url_to_repo']
+            id = l['id']
+            pro_dic = {'pro_owner': owner, 'pro_create_time': created_at,
+                       'pro_name': name, 'pro_url': ssh_url, 'pro_id': id}
+            pro_list.append(pro_dic)
+        return pro_list
+
     def get_user_projects(self, usertoken):
         url = 'http://' + self.host + '/api/v3/projects?private_token=' + usertoken
         r = requests.get(url)

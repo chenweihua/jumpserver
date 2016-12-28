@@ -1,9 +1,9 @@
 # coding: utf-8
 
-from models import Project,ProjectGroup
+from models import Project,Group
 from jumpserver.api import get_object
 
-def group_add_project(group, project_id=None, project_name=None):
+def group_add_project(group, project_id=None, name=None):
     """
     用户组中添加用户
     ProjectGroup Add a project
@@ -11,7 +11,7 @@ def group_add_project(group, project_id=None, project_name=None):
     if project_id:
         project = get_object(Project, id=project_id)
     else:
-        project = get_object(Project, project_name=project_name)
+        project = get_object(Project, name=name)
 
     if project:
         group.project_set.add(project)
@@ -21,12 +21,12 @@ def group_update_project(group_id, project_id_list):
     project group update member
     用户组更新成员
     """
-    project_group = get_object(ProjectGroup, id=group_id)
+    project_group = get_object(Group, id=group_id)
     if project_group:
         project_group.project_set.clear()
         for project_id in project_id_list:
-            project = get_object(ProjectGroup, id=project_id)
-            if isinstance(project, ProjectGroup):
+            project = get_object(Group, id=project_id)
+            if isinstance(project, Group):
                 project_group.project_set.add(project)
 
 def db_add_project_group(**kwargs):
@@ -34,15 +34,15 @@ def db_add_project_group(**kwargs):
     add a user group in database
     数据库中添加用户组
     """
-    group_name = kwargs.get('group_name')
-    group_code = kwargs.get('group_code')
-    projectgroup = get_object(ProjectGroup, group_name=group_name)
+    name = kwargs.get('name')
+    code = kwargs.get('code')
+    group = get_object(Group, name=name)
     proejcts = kwargs.pop('groups_id')
 
-    if not projectgroup:
-        projectgroup = ProjectGroup(**kwargs).save()
+    if not group:
+        group = Group(**kwargs).save()
         for project_id in proejcts:
-            group_add_project(projectgroup, project_id)
+            group_add_project(group, project_id)
 
 
 
@@ -60,7 +60,7 @@ def db_add_project(**kwargs):
     if groups_post:
            group_select = []
            for group_id in groups_post:
-               group = ProjectGroup.objects.filter(id=group_id)
+               group = group.objects.filter(id=group_id)
                group_select.extend(group)
            project.projectgroup = group_select
     if projects_list:
@@ -91,16 +91,16 @@ def db_update_project(**kwargs):
     group_select = []
     if groups_post:
         for group_id in groups_post:
-            group = ProjectGroup.objects.filter(id=group_id)
+            group = Group.objects.filter(id=group_id)
             group_select.extend(group)
-    project_get.projectgroup = group_select
+    project_get.group = group_select
 
-def db_del_project(project_name):
+def db_del_project(name):
     """
     delete a user from database
     从数据库中删除用户
     """
-    project = get_object(Project, project_name=project_name)
+    project = get_object(Project, name=name)
     if project:
         project.delete()
 
