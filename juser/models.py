@@ -4,17 +4,13 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 import time
 # from jasset.models import Asset, AssetGroup
-
-DEPT_TYPE_CHOICES = (
-        ('1', 'comp'),
-        ('2', 'dept'),
-
-)
+from jumpserver.models import DeptType
 
 class Dept(models.Model):
     name=models.CharField(max_length=80,unique=True)
     parent=models.ForeignKey("self", blank=True, null=True, related_name="children")
-    type=models.CharField(max_length=2, choices=DEPT_TYPE_CHOICES, default='CU')
+    type=models.ForeignKey(DeptType)
+
 
 class UserGroup(models.Model):
     name = models.CharField(max_length=80, unique=True)
@@ -87,9 +83,9 @@ class Menu(models.Model):
                                     blank=True,
                                     default=-1,
                                     help_text=u'菜单的显示顺序，优先级越大显示越靠前')
-    permission_id = models.IntegerField(verbose_name=u'权限编号',
+    permission_code = models.CharField(verbose_name=u'权限编号',
                                         help_text=u'给菜单设置一个编号，用于权限控制',
-                                        error_messages={'field-permission_id': u'只能输入数字'})
+                                        error_messages={'field-permission_id': u'只能输入数字'},max_length=32)
 
     def __str__(self):
          return "{parent}{name}".format(name=self.name, parent="%s-->" % self.parent.name if self.parent else '')

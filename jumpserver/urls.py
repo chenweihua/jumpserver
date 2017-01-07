@@ -1,5 +1,9 @@
+import xadmin
+xadmin.autodiscover()
 from django.conf.urls import  include, url
 from views import index,skin_config,Login,Logout,upload,exec_cmd,setting,web_terminal,download
+from xadmin.plugins import xversion
+xversion.register_models()
 
 urlpatterns = [
     url(r'^$', index, name='index'),
@@ -15,5 +19,7 @@ urlpatterns = [
     url(r'^jasset/', include('jasset.urls')),
     url(r'^jlog/', include('jlog.urls')),
     url(r'^jperm/', include('jperm.urls')),
-    url(r'^jproject/', include('jproject.urls'))
+    url(r'^jproject/', include('jproject.urls')),
+    url(r'^ueditor/', include('DjangoUeditor.urls')),
+    url(r'^xadmin/', include(xadmin.site.urls), name='xadmin'),
 ]

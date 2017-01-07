@@ -76,6 +76,16 @@
 {% block self_footer_js %}
 
 <script>
+{#$(document).ready(function() {#}
+{#    $.ajaxSetup({#}
+{#        data: {csrfmiddlewaretoken: '{{ csrf_token }}'}#}
+{#    });#}
+{#}#}
+
+$.ajaxSetup({
+    data: {csrfmiddlewaretoken: '{{ csrf_token }}' }
+});
+
 $('#projectForm').validator({
     timely: 2,
     theme: "yellow_right_effect",
@@ -123,35 +133,88 @@ $('#projectForm').validator({
     }
 });
 
-{#$("document").ready(function(){#}
-{#    $("input.role").click(function(){#}
-{#        if($("input.role[value=GA]").is( ":checked" )){#}
-{#            $("#admin_groups").css("display", 'block');#}
+{##}
+{##}
+{#$("#id_scm").change(function()#}
+{#        {#}
+{#            scmSelectionChanged();#}
+{#        })#}
+{#        function scmSelectionChanged()#}
+{#        {#}
+{#            var selected_scm = $("#id_scm").selectedIndex;#}
+{#            $.get('/jproject/getdata/', {selected_scm : selected_scm}, function(project){#}
+{#            $("#id_project").val(project);#}
+{#            });#}
 {#        }#}
-{#        else {#}
-{#            $("#admin_groups").css("display", 'none');#}
+
+//向服务器请求城市列表数据并调用添加城市函数
+{#function get_project_data(id_scm){    //这里的Selected_Id应该是被选中的省份的ID#}
+{##}
+{#            if(id_scm == 'Not_data1'){    //如果选择了"Province"选项，则表示重置当前City和Country的选项内容，不会向服务器请求数据#}
+{#                $("#id_scm_project").empty();#}
+{#                $("#id_scm_project").append("<option id='Not_data2'>City</option>");#}
+{#            }else{#}
+{#                $.getJSON('/GetCityData/',{'id':id_scm},function(Project_list){#}
+{#                    add_project(Project_list);    //调用添加城市选项函数#}
+{#                });#}
+{#            }#}
 {#        }#}
-{#    })#}
+
+
+//在当前页面添加城市选项
+{#function add_project(Project_list){#}
+{#            $("#id_scm_project").empty();#}
+{#            $("#id_scm_project").append("<option id='Not_data2'>City</option>");#}
+{#            $("#id_scm_project").empty();#}
+{#            $("#id_scm_project").append("<option id='Not_data3'>Country</option>");#}
+{#            //上面的两次清空与两次添加是为了保持级联的一致性#}
+{#            for(var index in Project_list){     //获得城市列表中的城市索引#}
+{#                //添加内容的同时在option标签中添加对应的城市ID#}
+{#                var text = "<option"+" id='"+Project_list[index]+"'>"+Project_list[index]+"</option>";#}
+{#                $("#id_scm_project").append(text);#}
+{#                console.log(text);  //用来观察生成的text数据#}
+{#            }#}
+{#        }#}
+
+{#$(function(){#}
+{#        var scm=$("#id_scm").val()#}
+{#        var project=$("id_project").val()#}
+{#        $("#id_scm_rul").val(scm+project)#}
 {#{)#}
 
-$("#id_scm").change(function()
-        {
-            scmSelectionChanged();
-        })
-        function scmSelectionChanged()
-        {
-            var selected_scm = $("#id_scm").selectedIndex;
-            $.get('/jproject/getdata/', {selected_scm : selected_scm}, function(project){
-            $("#id_project").val(project);
-            });
-        }
-        }
+$("#id_scm").change(function(){
+            var parentId = $("#id_scm").val();
+            if( parentId != "null" )
+                $.ajax({
+                    url : "{% url 'getProject' %}",
+                    type : 'GET',
+                    data : {
+                        'id' : parentId
+                    },
+                    dataType : 'json',
+                    error:function()
+                    {
+                        alert('Error loading data!');
+                    },
+                    success:function(msg)
+                    {
+                        $("#id_scm_project").empty();
+                        $.each(eval(msg), function(i, item) {
+                            $("<option value='" + item.pro_id + "'>" + item.pro_url + "</option>").appendTo($("#id_scm_project"));
+                        });
+                    }
+                });
+                return false;
 
-$(function(){
-        var scm=$("#id_scm").val()
-        var project=$("id_project").val()
-        $("#id_scm_rul").val(scm+project)
-})
+        });
+
+$("#id_scm_project").change(function(){
+            var parentId = $("#id_scm").val();
+            var projectId = $("#id_scm_project").val();
+            if(parentId != "null" || projectId != "null" )
+                $("#id_scm_url").val(parentId+projectId);
+
+        });
 
 </script>
 {% endblock %}

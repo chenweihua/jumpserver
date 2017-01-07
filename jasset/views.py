@@ -5,9 +5,9 @@ from jasset.asset_api import *
 from jumpserver.api import *
 from jumpserver.models import Setting
 from jasset.forms import AssetForm, IdcForm
-from jasset.models import Asset, IDC, AssetGroup, ASSET_TYPE, ASSET_STATUS
+from jasset.models import Asset, IDC, AssetGroup
 from jperm.perm_api import get_group_asset_perm, get_group_user_perm
-
+from jumpserver.models import AssetSatus ,AssetType
 
 @require_role('admin')
 def group_add(request):
@@ -268,8 +268,8 @@ def asset_list(request):
     user_perm = request.session['role_id']
     idc_all = IDC.objects.filter()
     asset_group_all = AssetGroup.objects.all()
-    asset_types = ASSET_TYPE
-    asset_status = ASSET_STATUS
+    asset_types = AssetType.objects.all()
+    asset_status = AssetSatus.objects.all()
     idc_name = request.GET.get('idc', '')
     group_name = request.GET.get('group', '')
     asset_type = request.GET.get('asset_type', '')

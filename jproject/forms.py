@@ -1,7 +1,7 @@
 # coding:utf-8
 from django import forms
 
-from jproject.models import Project,Group,Parameter,Publish,SCMSetting,SCMToken,Schedule,Config
+from jproject.models import Project,ProjectGroup,PublishConfig,Publish,SCMSetting,SCMToken,Schedule,Config,Env
 
 
 class ProjectForm(forms.ModelForm):
@@ -43,22 +43,27 @@ class ConfigForm(forms.ModelForm):
 
 class ProjectGroupForm(forms.ModelForm):
     class Meta:
-        model = Group
+        model = ProjectGroup
         fields = [
             "name", "code"
         ]
 
 
-class ParameterForm(forms.ModelForm):
+class PublishConfigForm(forms.ModelForm):
     class Meta:
-        model = Parameter
+        model = PublishConfig
         fields = ['project', "env", "file", 'item', 'confvalue', 'filetype']
-        widgets = {
-            'name': forms.TextInput(attrs={'placeholder': 'Name'}),
-            'network': forms.Textarea(
-                attrs={'placeholder': '192.168.1.0/24\n192.168.2.0/24'})
-        }
+        # widgets = {
+        #     'name': forms.TextInput(attrs={'placeholder': 'Name'}),
+        #     'network': forms.Textarea(
+        #         attrs={'placeholder': '192.168.1.0/24\n192.168.2.0/24'})
+        # }
 
+
+class EnvForm(forms.ModelForm):
+    class Meta:
+        model = Env
+        fields = ['name', "code", "precode"]
 
 class PublishForm(forms.ModelForm):
     class Meta:

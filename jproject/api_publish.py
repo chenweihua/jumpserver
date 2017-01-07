@@ -2,7 +2,7 @@
 # coding: utf-8
 
 import os, time, socket
-from models import Parameter, Env ,Publish
+from models import PublishConfig, Env ,Publish
 from jumpserver.api import get_object
 
 '''

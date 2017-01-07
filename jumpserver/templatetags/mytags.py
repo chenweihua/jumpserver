@@ -45,6 +45,16 @@ def groups2str(group_list):
         return '%s ...' % ' '.join([group.name for group in group_list[0:2]])
 
 
+
+
+@register.filter(name='env_count')
+def env_count(publish):
+    """
+    返回用户权限主机的数量
+    """
+    assets = publish.asset.all()
+    return len(assets)
+
 @register.filter(name='user_asset_count')
 def user_asset_count(user):
     """

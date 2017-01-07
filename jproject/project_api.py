@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from models import Project,Group
+from models import Project,ProjectGroup
 from jumpserver.api import get_object
 
 def group_add_project(group, project_id=None, name=None):
@@ -21,12 +21,12 @@ def group_update_project(group_id, project_id_list):
     project group update member
     用户组更新成员
     """
-    project_group = get_object(Group, id=group_id)
+    project_group = get_object(ProjectGroup, id=group_id)
     if project_group:
         project_group.project_set.clear()
         for project_id in project_id_list:
-            project = get_object(Group, id=project_id)
-            if isinstance(project, Group):
+            project = get_object(ProjectGroup, id=project_id)
+            if isinstance(project, ProjectGroup):
                 project_group.project_set.add(project)
 
 def db_add_project_group(**kwargs):
@@ -36,13 +36,13 @@ def db_add_project_group(**kwargs):
     """
     name = kwargs.get('name')
     code = kwargs.get('code')
-    group = get_object(Group, name=name)
+    projectgroup = get_object(ProjectGroup, name=name)
     proejcts = kwargs.pop('groups_id')
 
-    if not group:
-        group = Group(**kwargs).save()
+    if not projectgroup:
+        projectgroup = ProjectGroup(**kwargs).save()
         for project_id in proejcts:
-            group_add_project(group, project_id)
+            group_add_project(projectgroup, project_id)
 
 
 
@@ -91,8 +91,8 @@ def db_update_project(**kwargs):
     group_select = []
     if groups_post:
         for group_id in groups_post:
-            group = Group.objects.filter(id=group_id)
-            group_select.extend(group)
+            projectgroup = ProjectGroup.objects.filter(id=group_id)
+            group_select.extend(projectgroup)
     project_get.group = group_select
 
 def db_del_project(name):

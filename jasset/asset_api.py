@@ -4,11 +4,11 @@ import xlrd
 import xlsxwriter
 from django.db.models import AutoField
 from jumpserver.api import *
-from jasset.models import ASSET_STATUS, ASSET_TYPE, ASSET_ENV, IDC, AssetRecord
+from jasset.models import  IDC, AssetRecord
 from jperm.ansible_api import MyRunner
 from jperm.perm_api import gen_resource
 from jumpserver.templatetags.mytags import get_disk_info
-
+from jumpserver.models import AssetType,Env,AssetSatus
 import traceback
 
 
@@ -138,7 +138,10 @@ def db_asset_alert(asset, username, alert_dic):
     asset alert info to db
     """
     alert_list = []
-    asset_tuple_dic = {'status': ASSET_STATUS, 'env': ASSET_ENV, 'asset_type': ASSET_TYPE}
+    asset_status=AssetSatus.object.all()
+    asset_env=Env.objects.all()
+    asset_type=AssetType.object.all()
+    asset_tuple_dic = {'status': asset_status, 'env': asset_env, 'asset_type': asset_type}
     for field, value in alert_dic.iteritems():
         field_name = Asset._meta.get_field_by_name(field)[0].verbose_name
         if field == 'idc':

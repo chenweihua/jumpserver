@@ -7,12 +7,16 @@ from django.db.models import Q
 from jproject.project_api import *
 from jproject.api_publish import *
 from jumpserver.api import require_role,ServerError,my_render,pages
-from jproject.models import  Project,Group,Env,Parameter,Publish,SCMToken,SCMSetting
+from jproject.models import  Project,ProjectGroup,PublishConfig,Publish,SCMToken,SCMSetting
 from juser.models import  User
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from jproject.forms import *
 from jproject.gitlab import  Gitlab
+import json
+from django.shortcuts import render
+# from django.http import JsonResponse
+
 @require_role(role='user')
 def project_group_add(request):
     """
@@ -53,7 +57,7 @@ def project_group_list(request):
     """
     header_title, path1, path2 = '查看项目组', '项目管理', '查看项目组'
     keyword = request.GET.get('search', '')
-    group_list = Group.objects.all().order_by('name')
+    group_list = ProjectGroup.objects.all().order_by('name')
     id = request.GET.get('id', '')
 
     if keyword:
@@ -74,9 +78,31 @@ def project_group_del(request):
     ids = request.GET.get('id', '')
     id_list = ids.split(',')
     for id in id_list:
-        Group.objects.filter(id=id).delete()
+        ProjectGroup.objects.filter(id=id).delete()
 
     return HttpResponse('删除成功')
+
+@require_role(role='user')
+def getProject(request):
+    """
+    del a project group
+    删除项目组
+    """
+    id = request.GET.get('id', '')
+    scmsetting = SCMSetting.objects.get(id=id)
+    gitlab_project_list=[]
+    if scmsetting:
+        gitlab =Gitlab(scmsetting.scm_url,rootoken=scmsetting.default_token)
+    else:
+        return HttpResponse(json.dumps(gitlab_project_list))
+    for project in gitlab.get_projects():
+        gitlab_project_list.append(project)
+
+    return HttpResponse(json.dumps(gitlab_project_list),content_type="application/json")
+
+    # ufs = serializers.serialize("json", UploadFile.objects.all().order_by('-pub_date'))
+    # return HttpResponse(ufs, content_type="application/json")
+
 
 
 @require_role(role='user')
@@ -87,7 +113,7 @@ def project_group_edit(request):
 
     if request.method == 'GET':
         id = request.GET.get('id', '')
-        group = get_object(Group, id=id)
+        group = get_object(ProjectGroup, id=id)
         project_selected = Project.objects.filter(group=group)
         project_remain = Project.objects.filter(~Q(group=group))
         project_all = Project.objects.all()
@@ -103,14 +129,14 @@ def project_group_edit(request):
             if '' in [id, name]:
                 raise ServerError('组名不能为空')
 
-            if len(Group.objects.filter(name=name)) > 1:
+            if len(ProjectGroup.objects.filter(name=name)) > 1:
                 raise ServerError(u'%s 项目组已存在' % name)
             # add user group
-            group = get_object_or_404(Group, id=id)
+            group = get_object_or_404(ProjectGroup, id=id)
             group.project_set.clear()
 
             for project in Project.objects.filter(id__in=project_selected):
-                project.group.add(Group.objects.get(id=id))
+                project.group.add(ProjectGroup.objects.get(id=id))
 
             group.name = name
             group.sort = sort
@@ -138,7 +164,7 @@ def project_add(request):
     error = ''
     msg = ''
     header_title, path1, path2 = '添加项目组', '项目管理', '添加项目组'
-    group_all = Group.objects.all()
+    group_all = ProjectGroup.objects.all()
     project_all=Project.objects.all()
     # if request.user.is_superuser:
     #     scmsettings = SCMSetting.objects.all()
@@ -211,6 +237,8 @@ def project_add(request):
 
     return my_render('jproject/project_add.html', locals(), request)
 
+    # return render(request,'jproject/project_add.html', locals(), content_type='application/xhtml+xml')
+
 @require_role(role='user')
 def project_list(request):
     """
@@ -223,7 +251,7 @@ def project_list(request):
     projects_list = Project.objects.all().order_by('project_name')
 
     if gid:
-        project_group = Group.objects.filter(id=int(gid))
+        project_group = ProjectGroup.objects.filter(id=int(gid))
         if project_group:
             project_group=project_group[0]
             projects_list=project_group.project_set.all()
@@ -245,7 +273,7 @@ def project_del(request):
     ids = request.GET.get('id', '')
     id_list = ids.split(',')
     for id in id_list:
-        Group.objects.filter(id=id).delete()
+        ProjectGroup.objects.filter(id=id).delete()
 
     return HttpResponse('删除成功')
 
@@ -258,7 +286,7 @@ def project_edit(request):
 
     if request.method == 'GET':
         id = request.GET.get('id', '')
-        project_group = get_object(Group, id=id)
+        project_group = get_object(ProjectGroup, id=id)
         # user_group = UserGroup.objects.get(id=id)
         projects_selected = User.objects.filter(group=project_group)
         projects_remain = User.objects.filter(~Q(group=project_group))
@@ -274,14 +302,14 @@ def project_edit(request):
             if '' in [id, name]:
                 raise ServerError('组名不能为空')
 
-            if len(Group.objects.filter(name=name)) > 1:
+            if len(ProjectGroup.objects.filter(name=name)) > 1:
                 raise ServerError(u'%s 项目组已存在' % name)
             # add user group
-            project_group = get_object_or_404(Group, id=id)
+            project_group = get_object_or_404(ProjectGroup, id=id)
             project_group.user_set.clear()
 
             for project in Project.objects.filter(id__in=projects_selected):
-                project.projectgroup.add(Group.objects.get(id=id))
+                project.projectgroup.add(ProjectGroup.objects.get(id=id))
 
             project_group.name = name
             project_group.comment = comment
@@ -299,11 +327,6 @@ def project_edit(request):
     return my_render('jproject/project_edit.html', locals(), request)
 
 
-
-
-
-
-
 @require_role(role='user')
 def project_env_add(request):
     """
@@ -312,26 +335,27 @@ def project_env_add(request):
     """
     error = ''
     msg = ''
-    header_title, path1, path2 = '发布环境', '发布管理', '添加项发布'
+    header_title, path1, path2 = '发布环境', '发布管理', '添加发布环境'
     if request.method == 'POST':
-        config_name=request.POST.get("config_name",'')
-        config_code=request.POST.get("config_code",'')
+        name=request.POST.get("name",'')
+        code=request.POST.get("code",'')
+        procode=request.POST.get("precode",'')
         try:
-            if not config_name:
+            if not name:
                 error = u'发布环境 不能为空'
                 raise ServerError(error)
-            if not config_code:
+            if not code:
                 error = u'发布环境 不能为空'
                 raise ServerError(error)
-            db_add_publish_env(config_name=config_name, config_code=config_code)
+            db_add_publish_env(name=name, code=code)
         except ServerError:
             pass
         except TypeError:
             error = u'添加小组失败'
         else:
-            msg = u'添加组 %s 成功' % config_name
+            msg = u'添加组 %s 成功' % name
 
-    return my_render('juser/env_add.html', locals(), request)
+    return my_render('jproject/env_add.html', locals(), request)
 
 @require_role(role='user')
 def project_env_list(request):
@@ -341,7 +365,7 @@ def project_env_list(request):
     """
     header_title, path1, path2 = '查看发布环境', '发布环境', '发布环境'
     keyword = request.GET.get('search', '')
-    env_list = Env.objects.all().order_by('config_name')
+    env_list = Env.objects.all().order_by('name')
     env_id = request.GET.get('id', '')
 
     if keyword:
@@ -415,18 +439,7 @@ def project_env_edit(request):
             projects_selected = Project.objects.filter(group=project_group)
             projects_remain = Project.objects.filter(~Q(group=project_group))
 
-    return my_render('juser/env_edit.html', locals(), request)
-
-
-
-
-
-
-
-
-
-
-
+    return my_render('jproject/env_edit.html', locals(), request)
 
 
 @require_role(role='user')
@@ -580,3 +593,122 @@ def config_del(request):
 
     return HttpResponse(u'删除成功')
 
+
+
+@require_role(role='user')
+def publish_env_add(request):
+    """
+    group add view for route
+    添加项目组的视图
+    """
+    error = ''
+    msg = ''
+    header_title, path1, path2 = '发布环境', '发布管理', '添加环境配置'
+
+    if request.method == 'POST':
+        project=request.POST.get("project",'')
+        env=request.POST.get("env",'')
+        files_list=request.POST.getList("file",'')
+        items_list=request.POST.getList("item",'')
+        configvalues_list=request.POST.getList("confvalue",'')
+        try:
+            if not project:
+                error = u'发布环境 不能为空'
+                raise ServerError(error)
+            if not env:
+                error = u'发布环境 不能为空'
+                raise ServerError(error)
+            for file in files_list:
+                db_add_publish_env(project=project, env=env,file=file)
+        except ServerError:
+            pass
+        except TypeError:
+            error = u'添加小组失败'
+        else:
+            msg = u'添加组 %s 成功' % project
+
+    return my_render('jproject/parameter_add.html', locals(), request)
+
+@require_role(role='user')
+def publish_env_list(request):
+    """
+    list user group
+    项目组列表
+    """
+    header_title, path1, path2 = '查看发布环境', '发布环境', '发布环境'
+    keyword = request.GET.get('search', '')
+    env_list = Env.objects.all().order_by('name')
+    env_id = request.GET.get('id', '')
+
+    if keyword:
+        env_list = env_list.filter(Q(name__icontains=keyword) | Q(code__icontains=keyword))
+
+    if env_id:
+        env_list = env_list.filter(id=int(env_id))
+
+    env_list, p, envs, page_range, current_page, show_first, show_end = pages(env_list, request)
+    return my_render('jproject/parameter_list.html', locals(), request)
+
+
+@require_role(role='user')
+def publish_env_del(request):
+    """
+    del a group
+    删除项目组
+    """
+    env_ids = request.GET.get('id', '')
+    end_id_list = env_ids.split(',')
+    for env_id in end_id_list:
+        Env.objects.filter(id=env_id).delete()
+
+    return HttpResponse('删除成功')
+
+
+@require_role(role='user')
+def publish_env_edit(request):
+    error = ''
+    msg = ''
+    header_title, path1, path2 = '编辑发布环境', '发布环境', '编辑发布环境'
+
+    env_id=request.GET.get('envid','')
+    projects_all = Project.objects.all()
+
+    if request.method == 'GET':
+
+        publisenv = get_object(Env, id=env_id)
+        # user_group = UserGroup.objects.get(id=id)
+        projects_selected = Parameter.objects.filter(env=publisenv)
+        projects_remain = Parameter.objects.filter(~Q(env=publisenv))
+    elif request.method == 'POST':
+        id = request.POST.get('id', '')
+        name = request.POST.get('name', '')
+        comment = request.POST.get('comment', '')
+        projects_selected = request.POST.getlist('projects_selected')
+
+        try:
+            if '' in [id, name]:
+                raise ServerError('组名不能为空')
+
+            if len(Group.objects.filter(name=name)) > 1:
+                raise ServerError(u'%s 项目组已存在' % name)
+            # add user group
+            project_group = get_object_or_404(Group, id=id)
+            project_group.user_set.clear()
+
+            for project in Project.objects.filter(id__in=projects_selected):
+                project.projectgroup.add(Group.objects.get(id=id))
+
+            project_group.name = name
+            project_group.comment = comment
+            project_group.save()
+        except ServerError, e:
+            error = e
+
+        if not error:
+            return HttpResponseRedirect(reverse('project_list'))
+        else:
+            projects_all = Project.objects.all()
+            projects_selected = Project.objects.filter(group=project_group)
+            projects_remain = Project.objects.filter(~Q(group=project_group))
+
+    return my_render('jproject/parameter_edit.html', locals(), request)

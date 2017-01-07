@@ -5,25 +5,7 @@ from django.db import models
 from juser.models import User
 from jasset.models import Asset,AssetGroup
 from juser.models import  Dept
-
-
-SCM_TYPE_CHOICES= (
-    ("GIT","gitlab"),
-    ("SVN","svn")
-)
-SCM_MODEL_CHOICES = (
-    ("java","java"),
-    ("python","python")
-)
-
-
-PUBLISH_TYPE_CHOICES = (
-    ("dev","dev"),
-    ("product","product"),
-    ("test","test")
-)
-
-
+from jumpserver.models import Env,ScmType,CompileTool,ConfigType,PublishMode,PublishStatus,PublishType
 
 class SCMSetting(models.Model):
     scm_url = models.CharField(max_length=100, null=True, unique=True, default=None, verbose_name=u'GitLab域名')
@@ -31,6 +13,9 @@ class SCMSetting(models.Model):
     default_user=models.CharField(max_length=32)
     default_password=models.CharField(max_length=64)
     default_token=models.CharField(max_length=128)
+    def __unicode__(self):
+        return self.scm_url
+
 
 
 class SCMToken(models.Model):
@@ -39,9 +24,10 @@ class SCMToken(models.Model):
     scm_password= models.CharField(max_length=64)
     scm_user_token = models.CharField(max_length=128, null=True, unique=True, default=None, verbose_name=u'用户token')
     fullname = models.ForeignKey(User, null=False, blank=False, verbose_name=u'姓名')
+    def __unicode__(self):
+        return self.scm_user
 
-
-class Group(models.Model):
+class ProjectGroup(models.Model):
     code=models.CharField(max_length=32,unique=True)
     name=models.CharField(max_length=32,unique=True)
     def __unicode__(self):
@@ -55,54 +41,50 @@ class Project(models.Model):
     scm_url =models.CharField(max_length=255,unique=True)
     scm = models.ForeignKey(SCMSetting)
     scm_project = models.CharField(max_length=255,blank=True)
-    scm_model_type = models.CharField(max_length=10, choices=SCM_MODEL_CHOICES, default='java')
-    scm_type = models.CharField(max_length=10, choices=SCM_TYPE_CHOICES, default='GIT')
-    owner = models.ForeignKey(User)
+    scm_model_type= models.ForeignKey(CompileTool)
+    scm_type = models.ForeignKey(ScmType)
+    owner = models.ForeignKey(User,related_name="owner")
     dept = models.ForeignKey(Dept)
-    group=models.ManyToManyField(Group)
+    group=models.ManyToManyField(ProjectGroup)
     dependent=models.ManyToManyField('self')
-    manage =models.CharField(max_length=32)
+    manage =models.ForeignKey(User,related_name="manage")
     phone = models.CharField(max_length=20)
     work=models.CharField(max_length=255)
     web_work=models.CharField(max_length=255)
     backup =models.CharField(max_length=128)
+    def __unicode__(self):
+        return self.name
 
-# class ProjectMembership(models.Model)
-#     project=models.ForeignKey(Project)
-#     group=models.ForeignKey(ProjectGroup)
-#     sort= models.IntegerField
+
 
 class Config(models.Model):
-    CONFIG_FLAG_CHOICES=(('1','必须'),('2','非必须'))
-    project=models.OneToOneField('Project')
+    project=models.ForeignKey(Project)
     file=models.CharField(max_length=255)
-    item=models.CharField(max_length=255)
-    defaultvalue=models.CharField(max_length=255)
-    filetype=models.CharField(max_length=32)
-    flag=models.CharField(max_length=2,choices=CONFIG_FLAG_CHOICES)
+    item=models.CharField(max_length=64)
+    confvalue=models.CharField(max_length=128)
+    filetype=models.CharField(max_length=10)
+    def __unicode__(self):
+        return self.file
 
 
 
-class Env(models.Model):
-    name= models.CharField(max_length=10, choices=PUBLISH_TYPE_CHOICES, default='test')
-    precode=models.CharField(max_length=10)
-    code=models.CharField(max_length=32)
 
-class Parameter(models.Model):
+class PublishConfig(models.Model):
     project=models.ForeignKey(Project)
     env=models.ForeignKey(Env)
+    prefix = models.CharField(max_length=255)
     file=models.CharField(max_length=255)
-    item=models.CharField(max_length=255)
-    confvalue=models.CharField(max_length=255)
-    filetype=models.CharField(max_length=32)
+    item=models.CharField(max_length=64)
+    confvalue=models.CharField(max_length=128)
+    filetype=models.CharField(max_length=10)
+    def __unicode__(self):
+        return self.item
 
-STATUS_CHOICES=(("1","申请"),("2","批准"),("3","成功"),("4","失败"),("5","申请回退"),("6","回退中"),("7","回退完成"))
-MODEL_CHOICES=(("1","local"),("2","remotersync"),("3","bit"))
-SCHEDULE_TYPE_CHOICES=(("1","一次"),("2","定时"),("3","不限次"))
+
 
 class Publish(models.Model):
     project=models.ForeignKey(Project)
-    projectgroup=models.ForeignKey(Group)
+    projectgroup=models.ForeignKey(ProjectGroup)
     env=models.ForeignKey(Env)
     commits=models.CharField(max_length=255)
     branch=models.CharField(max_length=255)
@@ -112,22 +94,24 @@ class Publish(models.Model):
     user=models.ForeignKey(User)
     before=models.CharField(max_length=255)
     after=models.CharField(max_length=255)
-    model=models.CharField(max_length=20,choices=MODEL_CHOICES)
-    status=models.CharField(max_length=20,choices=STATUS_CHOICES)
-
+    model=models.ForeignKey(PublishMode)
+    status= models.ForeignKey(PublishStatus)
+    def __unicode__(self):
+        return self.name
 
 class Schedule(models.Model):
-    type=models.CharField(max_length=20,choices=SCHEDULE_TYPE_CHOICES)
+    type = models.ForeignKey(PublishType)
     start=models.DateField()
     schedule=models.CharField(max_length=32)
+    def __unicode__(self):
+        return self.type
 
 class publishHistory(models.Model):
-
     publish=models.ForeignKey(Publish)
     start=models.DateField()
     end=models.DateField()
     user=models.ForeignKey(User)
-    status=models.CharField(max_length=20,choices=STATUS_CHOICES)
-    
+    status= models.ForeignKey(PublishStatus)
+
 
 

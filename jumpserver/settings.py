@@ -12,7 +12,16 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 import ConfigParser
 import getpass
+import sys
+reload(sys)
+# sys.getdefaultencoding('utf-8')
+gettext = lambda s: s
 
+
+LANGUAGES = (
+    ('en', gettext('English')),
+    ('zh-hans', gettext('Chinese')),
+)
 config = ConfigParser.ConfigParser()
 
 BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
@@ -20,6 +29,7 @@ config.read(os.path.join(BASE_DIR, 'jumpserver.conf'))
 KEY_DIR = os.path.join(BASE_DIR, 'keys')
 
 AUTH_USER_MODEL = 'juser.User'
+
 # mail config
 MAIL_ENABLE = config.get('mail', 'mail_enable')
 EMAIL_HOST = config.get('mail', 'email_host')
@@ -64,8 +74,8 @@ ALLOWED_HOSTS = ['0.0.0.0/8']
 
 # Application definition
 
+
 INSTALLED_APPS = (
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -80,7 +90,10 @@ INSTALLED_APPS = (
     'jperm',
     'jlog',
     'jproject',
-
+    'xadmin',
+    'reversion',
+    'crispy_forms',
+    'DjangoUeditor',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -91,6 +104,7 @@ MIDDLEWARE_CLASSES = (
     # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
 )
 
 ROOT_URLCONF = 'jumpserver.urls'
@@ -131,6 +145,28 @@ else:
             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         }
     }
+
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            os.path.join(BASE_DIR,"templates"),
+            ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+            'debug':DEBUG
+        },
+    },
+]
+
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
@@ -143,9 +179,9 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.request",
 )
 
-TEMPLATE_DIRS = (
-    os.path.join(BASE_DIR, 'templates'),
-)
+# TEMPLATE_DIRS = (
+#     os.path.join(BASE_DIR, 'templates'),
+# )
 
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
@@ -165,6 +201,11 @@ USE_L10N = True
 
 USE_TZ = False
 
+XADMIN_CONF = 'jumpserver.admin'
+
+DATE_FORMAT = 'Y-m-d'
+DATETIME_FORMAT = 'Y-m-d H:i'
+TIME_FORMAT = 'H:i'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
