@@ -25,7 +25,7 @@
 
                 <div class="ibox-content">
                     <div class="">
-                    <a href="{% url 'env_add' %}" class="btn btn-sm btn-primary "> 添加环境 </a>
+                    <a href="{% url 'project_env_add' %}" class="btn btn-sm btn-primary "> 添加环境 </a>
                     <a id="del_btn" class="btn btn-sm btn-danger "> 删除所选 </a>
                     <form id="search_form" method="get" action="" class="pull-right mail-search">
                         <div class="input-group">
@@ -45,11 +45,11 @@
                                 <th class="text-center">
                                     <input type="checkbox" id="select_all" name="select_all">
                                 </th>
-                                <th class="text-center">环境名称</th>
-                                <th class="text-center">环境代码</th>
-                                <th class="text-center">代码前缀</th>
-                                <th class="text-center">主机数</th>
-                                <th class="text-center">操作</th>
+                                <th class="text-center">项目名称</th>
+                                <th class="text-center">发布环境名称</th>
+                                <th class="text-center">配置文件</th>
+                                <th class="text-center">文件</th>
+                                <th class="text-center">目录</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -66,8 +66,8 @@
                                 </td>
 
                                 <td class="text-center">
-                                    <a href="{% url 'env_add' %}?id={{ env.id }}" class="btn btn-xs btn-info">编辑</a>
-                                    <a value="{% url 'env_add' %}?id={{ env.id }}" class="btn btn-xs btn-danger del">删除</a>
+                                    <a href="{% url 'project_env_edit' %}?id={{ env.id }}" class="btn btn-xs btn-info">编辑</a>
+                                    <a value="{% url 'project_env_del' %}?id={{ env.id }}" class="btn btn-xs btn-danger del">删除</a>
                                 </td>
                             </tr>
                         {% endfor %}

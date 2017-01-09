@@ -20,16 +20,6 @@ from jumpserver.api import get_object
 
 
 
-def db_add_publish_env(**kwargs):
-    """
-    add a user in database
-    数据库中添加用户
-    """
-
-    projects_list=kwargs.pop(('env_list'))
-    env = Env(**kwargs)
-    env.save()
-    return env
 
 
 def db_update_publish_env(**kwargs):

@@ -22,23 +22,31 @@ class ProjectForm(forms.ModelForm):
 class ScmSettingForm(forms.ModelForm):
     class Meta:
         model = SCMSetting
-        fields = []
+        fields = "__all__"
+
 
 class ScmTokenForm(forms.ModelForm):
     class Meta:
         model = SCMToken
-        fields = []
+        fields = "__all__"
+
 
 class ScheduleForm(forms.ModelForm):
     class Meta:
         model = Schedule
-        fields = []
+        fields = "__all__"
+
 
 
 class ConfigForm(forms.ModelForm):
     class Meta:
         model = Config
-        fields = []
+        fields = "__all__"
+
+class PublishConfigForm(forms.ModelForm):
+    class Meta:
+        model = PublishConfig
+        fields = "__all__"
 
 
 class ProjectGroupForm(forms.ModelForm):

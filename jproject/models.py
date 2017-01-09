@@ -51,6 +51,7 @@ class Project(models.Model):
     phone = models.CharField(max_length=20)
     work=models.CharField(max_length=255)
     web_work=models.CharField(max_length=255)
+    web_dest=models.CharField(max_length=255)
     backup =models.CharField(max_length=128)
     def __unicode__(self):
         return self.name
@@ -59,12 +60,15 @@ class Project(models.Model):
 
 class Config(models.Model):
     project=models.ForeignKey(Project)
+    path=models.CharField(max_length=255)
     file=models.CharField(max_length=255)
+    md5 = models.CharField(max_length=255)
     item=models.CharField(max_length=64)
     confvalue=models.CharField(max_length=128)
     filetype=models.CharField(max_length=10)
+
     def __unicode__(self):
-        return self.file
+        return ('%s/%s'%(self.path,self.file))
 
 
 
@@ -72,6 +76,7 @@ class Config(models.Model):
 class PublishConfig(models.Model):
     project=models.ForeignKey(Project)
     env=models.ForeignKey(Env)
+    config=models.ForeignKey(Config)
     prefix = models.CharField(max_length=255)
     file=models.CharField(max_length=255)
     item=models.CharField(max_length=64)

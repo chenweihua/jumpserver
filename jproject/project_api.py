@@ -1,7 +1,8 @@
 # coding: utf-8
-
-from models import Project,ProjectGroup
+import os
+from models import Project,ProjectGroup,Env,Config
 from jumpserver.api import get_object
+
 
 def group_add_project(group, project_id=None, name=None):
     """
@@ -106,5 +107,45 @@ def db_del_project(name):
 
 
 
+def get_file_context(project_id,env_id,file):
+    if project_id and env_id:
+        try:
+            project = Project.objects.filter(id=project_id)
+            config=Config.objects.all().fileter(project=project,file=file)
 
+            env=Env.objects.all().filter(id=env_id)
+            if config.path is None:
+                file=project.work+'/'+project.web_work+'src/resource'+file
+            else:
+                file=project.work+'/'+project.web_work+'src/resource'+'/'+config.path+'/'+file
+            f= open(file,'rb')
+            f.close
+            return f.read()
+        except:
+            f.close()
 
+def write_file_context(project_id,env_id,file,context):
+    if project_id and env_id:
+        try:
+            project=Project.objects.all().filter(id=project_id,file=file)
+            config=Config.objects.all().fileter(project=project,file=file)
+            env=Env.objects.all().filter(id=env_id)
+            if config.path is None:
+                if  os.path.exists(env.rsync_resouce+'/'+env.code+'/'+project.code+'/'+'ROOT/classes'+'/'+config.path):
+                    pass
+                else:
+                    os.makedirs(env.rsync_resouce+'/'+env.code+'/'+project.code+'/'+'ROOT/classes'+'/'+config.path)
+                file=env.rsync_resouce+'/'+env.code+'/'+'/'+project.code+'/'+'ROOT/classes'+'/'+config.path+'/'+file
+            else:
+                if  os.path.exists(env.rsync_resouce+'/'+env.code+'/'+project.code+'/'+'ROOT/classes'):
+                    pass
+                else:
+                    os.makedirs(env.rsync_resouce+'/'+env.code+'/'+project.code+'/'+'ROOT/classes')
+                file=env.rsync_resouce+'/'+env.code+'/'+'/'+project.code+'/'+'ROOT/classes'+'/'+config.path+'/'+file
+            file=env.rsync_resouce+'/'+env.code+'/'+'/'+project.code+'/'+'ROOT/classes'+'/'+file
+
+            f= open(file,'wb')
+            f.write(context)
+            f.close()
+        except:
+            f.close()
